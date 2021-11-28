@@ -3,6 +3,7 @@ using ScreenRecordLibrary;
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 
 namespace ScreenRecordTests
 {
@@ -10,6 +11,8 @@ namespace ScreenRecordTests
     public class ScreenRecordTests
     {
         private const string ScreenshotFolder = "Screenshots";
+        private const string RecordingFolder = "Recordings";
+
 
         [TestInitialize]
         public void InitialiseTest()
@@ -18,6 +21,11 @@ namespace ScreenRecordTests
             if (Directory.Exists(ScreenshotFolder))
             {
                 Directory.Delete(ScreenshotFolder, recursive: true);
+            }
+
+            if (Directory.Exists(RecordingFolder))
+            {
+                Directory.Delete(RecordingFolder, recursive: true);
             }
         }
 
@@ -81,6 +89,24 @@ namespace ScreenRecordTests
             // Pass an incorrect filetype to the screenshot method
             ScreenRecord screenRecord = new ScreenRecord();
             screenRecord.CaptureScreenshot(targetImageFormat: "unsupported");
+        }
+
+        [TestMethod]
+        public void CaptureScreenRecordingTest()
+        {
+            ScreenRecord screenRecord = new ScreenRecord();
+
+            // Begin recording
+            screenRecord.StartRecording();
+
+            // Sleep for 10 seconds
+            Thread.Sleep(10000);
+
+            // Stop recording
+            screenRecord.StopRecording();
+
+            // Check if expected output file is created
+            if (File.Exists())
         }
     }
 }

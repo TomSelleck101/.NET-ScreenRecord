@@ -10,6 +10,9 @@ namespace ScreenRecordLibrary
 {
     public class ScreenRecord
     {
+        public bool IsRecording = false;
+
+        private string CurrentRecordingFolder = "";
         private const string ScreenshotFolder = "Screenshots";
         private const string RecordingsFolder = "Recordings";
 
@@ -39,10 +42,11 @@ namespace ScreenRecordLibrary
                 Directory.CreateDirectory(RecordingsFolder);
             }
         }
+
         /// <summary>
         /// Capture and save a screenshot to the disk
         /// </summary>
-        public void CaptureScreenshot(string destinationDirectory = ScreenshotFolder, string targetImageFormat = "png")
+        public string CaptureScreenshot(string destinationDirectory = ScreenshotFolder, string targetImageFormat = "png")
         {
             // Check if a valid filetype was supplied
             if (!extensionMap.ContainsKey(targetImageFormat))
@@ -50,17 +54,43 @@ namespace ScreenRecordLibrary
                 throw new ArgumentException($"Supplied target format \"{targetImageFormat}\" is not supported. Supported formats are {extensionMap.Keys}");
             }
 
+            // Set the filename for the image to be created
+            string filename = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}";
+            string destinationPath = $"{destinationDirectory}\\{filename}.{targetImageFormat}";
+
+            // Capture the screenshot and write to disk
             Rectangle bounds = Screen.PrimaryScreen.Bounds;
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
             using (Graphics g = Graphics.FromImage(bitmap))
             {
                 g.CopyFromScreen(new Point(bounds.Left, bounds.Top), Point.Empty, bounds.Size);
 
-                string filename = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss-fff}";
-
                 // Save image to the destination path with the supplied format
-                bitmap.Save($"{destinationDirectory}\\{filename}.{targetImageFormat}", extensionMap[targetImageFormat]);
+                bitmap.Save(destinationPath, extensionMap[targetImageFormat]);
             }
+
+            // Return the relative path to the image
+            return destinationPath;
+        }
+
+        /// <summary>
+        /// Begin capturing images on seperate thread
+        /// </summary>
+        public bool StartRecording(out string error, string destinationDirectory = RecordingsFolder)
+        {
+            if (IsRecording)
+            {
+                error = $"Recording already in progress  {CurrentRecordingFolder}";
+                return false;
+            }
+
+            // Create a folder with the current 
+            string destinationFolderName = $"{DateTime.Now:yyyy-MM-dd_HH-mm-ss}";
+            CurrentRecordingFolder = Path.Combine(RecordingsFolder, destinationFolderName);
+
+            Directory.CreateDirectory(CurrentRecordingFolder);
+
+
         }
     }
 }
